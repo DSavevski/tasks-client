@@ -18,6 +18,10 @@ import {
   VDivider,
   VSubheader,
   VTooltip,
+  VDialog,
+  VCard,
+  VSelect,
+  VTextField,
   transitions
 } from 'vuetify'
 
@@ -37,6 +41,10 @@ Vue.use(Vuetify, {
     VDivider,
     VSubheader,
     VTooltip,
+    VDialog,
+    VCard,
+    VSelect,
+    VTextField,
     transitions
   }
 })
