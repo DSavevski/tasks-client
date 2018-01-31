@@ -22,6 +22,7 @@ import {
   VCard,
   VSelect,
   VTextField,
+  VTabs,
   transitions
 } from 'vuetify'
 
@@ -45,6 +46,7 @@ Vue.use(Vuetify, {
     VCard,
     VSelect,
     VTextField,
+    VTabs,
     transitions
   }
 })
@@ -52,7 +54,7 @@ Vue.use(Vuetify, {
 Vue.use(VCalendar, {
   firstDayOfWeek: 2, // Set first day of week to Sunday
   popoverExpanded: true,
-  popoverVisibility: 'visible',
+  /*popoverVisibility: 'visible',*/
   datePickerInputClass: 'datepicker-input',
   datePickerInputPlaceholder: 'FSADASDDA'
 })

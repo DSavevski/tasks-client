@@ -1,149 +1,214 @@
 <template>
-    <v-app id="inspire">
+  <v-app id="inspire">
 
-        <!--Sidebar-->
-        <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.width > 1264" v-model="drawer" class="grey lighten-4"
-                             app>
-            <v-list dense class="grey lighten-4">
-                <template v-for="(item, i) in items">
+    <!--Sidebar-->
+    <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.width > 1264" v-model="drawer" class="grey lighten-4" app>
+      <v-list dense class="grey lighten-4">
 
-                    <v-layout row v-if="item.heading" align-center :key="i">
-                        <v-flex xs6>
-                            <v-subheader v-if="item.heading">
-                                {{ item.heading }}
-                            </v-subheader>
-                        </v-flex>
+        <v-layout row align-center>
+          <v-flex xs6>
+            <v-subheader>
+              General
+            </v-subheader>
+          </v-flex>
+        </v-layout>
 
-                        <v-flex v-if="item.heading !== 'General'" xs6 class="text-xs-right">
-                            <v-btn small flat>edit</v-btn>
-                        </v-flex>
-                    </v-layout>
+        <v-list-tile @click="onClick()">
+          <v-list-tile-action>
+            <v-icon>today</v-icon>
+          </v-list-tile-action>
 
-                    <v-divider v-else-if="item.divider" class="my-4" :key="i"/>
+          <v-list-tile-content>
+            <v-list-tile-title class="grey--text">
+              Today
+            </v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
 
-                    <v-list-tile :key="i" v-else @click="item.func">
-                        {{item.func}}
-                        <v-list-tile-action>
-                            <v-icon>{{ item.icon }}</v-icon>
-                        </v-list-tile-action>
-                        <v-list-tile-content>
-                            <v-list-tile-title class="grey--text">
-                                {{ item.text }}
-                            </v-list-tile-title>
-                        </v-list-tile-content>
-                    </v-list-tile>
+        <v-list-tile @click="onClick()">
+          <v-list-tile-action>
+            <v-icon>view_week</v-icon>
+          </v-list-tile-action>
 
-                </template>
-            </v-list>
+          <v-list-tile-content>
+            <v-list-tile-title class="grey--text">
+              Week
+            </v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
 
-            <div id="cal">
-                <v-date-picker
-                        mode='range'
-                        v-model='selectedDate'
-                        :attributes='attrs'
-                        show-caps>
-                </v-date-picker>
-            </div>
-        </v-navigation-drawer>
+        <v-divider class="my-4"/>
 
-        <!--Navbar-->
-        <v-toolbar color="amber" app absolute clipped-left>
-            <v-toolbar-side-icon v-if="$vuetify.breakpoint.width <= 1264" @click="drawer = !drawer"/>
-            <span class="title">Tasks&nbsp;<!--<span class="text">Keep</span>--></span>
-        </v-toolbar>
+        <!--<v-layout row align-center>
+          <v-flex xs6>
+            <v-subheader>
+              Tasks
+            </v-subheader>
+          </v-flex>
+        </v-layout>
 
-        <!--Container-->
-        <v-content>
-            <v-container fluid fill-height class="grey lighten-4">
-                <v-layout justify-center align-center>
+        <v-list-tile @click="onClick()">
+          <v-list-tile-action>
+            <v-icon>add</v-icon>
+          </v-list-tile-action>
 
-                    <router-view/>
+          <v-list-tile-content>
+            <v-list-tile-title class="grey&#45;&#45;text">
+              Add new task
+            </v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>-->
 
-                </v-layout>
-            </v-container>
-        </v-content>
 
-    </v-app>
+        <v-layout row align-center>
+          <v-flex xs6>
+            <v-subheader>
+              Filters
+            </v-subheader>
+          </v-flex>
+        </v-layout>
+
+        <template>
+          <v-tabs icons centered>
+            <v-tabs-bar color="" style="font-size: 11px; height: 40px">
+              <v-tabs-slider color="amber" style="height: 10%"></v-tabs-slider>
+              <v-tabs-item href="#tab-1">
+                Recents
+              </v-tabs-item>
+              <v-tabs-item href="#tab-2">
+                Favorites
+              </v-tabs-item>
+              <v-tabs-item href="#tab-3">
+                Nearby
+              </v-tabs-item>
+            </v-tabs-bar>
+            <v-tabs-items>
+              <v-tabs-content
+                v-for="i in 3"
+                :key="i"
+                :id="'tab-' + i"
+              >
+                <v-card flat style="background-color: inherit">
+                  <v-card-text>{{ text }}</v-card-text>
+                </v-card>
+              </v-tabs-content>
+            </v-tabs-items>
+          </v-tabs>
+        </template>
+
+
+      </v-list>
+
+      <!--<div id="cal">
+        <v-date-picker
+          mode='range'
+          v-model='selectedDate'
+          :attributes='attrs'
+          show-caps>
+        </v-date-picker>
+      </div>-->
+
+    </v-navigation-drawer>
+
+    <!--Navbar-->
+    <v-toolbar color="amber" app absolute clipped-left>
+      <v-toolbar-side-icon v-if="$vuetify.breakpoint.width <= 1264" @click="drawer = !drawer"/>
+      <span class="title">Tasks&nbsp;<!--<span class="text">Keep</span>--></span>
+    </v-toolbar>
+
+    <!--Container-->
+    <v-btn fab bottom right color="pink" dark fixed @click.stop="dialog = !dialog">
+      <v-icon>add</v-icon>
+    </v-btn>
+    <v-content>
+      <add-task-dialog v-if="dialog"></add-task-dialog>
+      <router-view></router-view>
+    </v-content>
+
+  </v-app>
 </template>
 
 <script>
-    import AddTaskDialog from '@/components/AddTaskDialog'
+  import AddTaskDialog from '@/components/AddTaskDialog'
 
-    export default {
-        data: () => ({
-            drawer: null,
-
-            items: [
-                {heading: 'General'},
-                {icon: 'lightbulb_outline', text: 'Notes', func: 'test'},
-                {icon: 'touch_app', text: 'Reminders', func: 'test2'},
-                {divider: true},
-                {heading: 'Categories'},
-                {icon: 'add', text: 'Create new category', func: 'test()'},
-                {divider: true}
-            ],
-            selectedDate: null,
-
-            attrs: [
-                {
-                    key: 'today',
-                    dates: new Date(2018, 0, 1),
-                    highlight: {
-                        backgroundColor: '#ff8080',
-                    },
-                    // Just use a normal style
-                    contentStyle: {
-                        color: '#fafafa',
-                    },
-                    // Our new popover here
-                    popover: {
-                        label: 'Test',
-                    },
-                },
-            ],
-        }),
-
-        props: {
-            source: String
+  export default {
+    data: () => ({
+      drawer: null,
+      dialog: false,
+      items: ['tab-1', 'tab-2', 'tab-3'],
+      active: null,
+      text: 'Test',
+      selectedDate: null,
+      attrs: [
+        {
+          key: 'today',
+          dates: new Date(),
+          highlight: {
+            backgroundColor: '#ff8080',
+          },
+          contentStyle: {
+            color: '#fafafa',
+          },
+          popover: {
+            label: 'Today',
+          },
         },
+      ],
+    }),
 
-        computed: {},
-        components: {
-            AddTaskDialog
-        },
-        methods: {
-            test: function () {
-                console.log('test');
-            }
+    props: {
+      source: String
+    },
+
+    computed: {},
+    components: {
+      AddTaskDialog
+    },
+    methods: {
+      onClick: function (arg) {
+        if (arg === 3) {
+          this.dialog = !this.dialog;
+        } else if (arg === 2) {
+
+        } else {
+
         }
+      },
+      onClosedDialog: function () {
+        this.dialog = false;
+      },
+      next () {
+        this.active = this.tabs[(this.tabs.indexOf(this.active) + 1) % this.tabs.length]
+      }
     }
+  }
 </script>
 
 <style>
-    #cal {
-        margin-left: 20px;
-    }
+  #cal {
+    margin-left: 20px;
+  }
 
-    #keep main .container {
-        height: 660px;
-    }
+  #keep main .container {
+    height: 660px;
+  }
 
-    .navigation-drawer__border {
-        display: none;
-    }
+  .navigation-drawer__border {
+    display: none;
+  }
 
-    .text {
-        font-weight: 400;
-    }
+  .text {
+    font-weight: 400;
+  }
 
-    .datepicker-input {
-        width: 92%;
-        text-align: center;
-        border-bottom: 1px solid black;
-    }
+  .datepicker-input {
+    width: 92%;
+    text-align: center;
+    border-bottom: 1px solid black;
+  }
 
-    .datepicker-input:focus {
-        outline: none;
+  .datepicker-input:focus {
+    outline: none;
 
-    }
+  }
 </style>
