@@ -1,6 +1,5 @@
 <template>
   <v-app id="inspire">
-
     <!--Sidebar-->
     <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.width > 1264" v-model="drawer" class="grey lighten-4" app>
       <v-list dense class="grey lighten-4">
@@ -20,7 +19,7 @@
 
           <v-list-tile-content>
             <v-list-tile-title class="grey--text">
-              Today
+              Daily
             </v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -32,7 +31,7 @@
 
           <v-list-tile-content>
             <v-list-tile-title class="grey--text">
-              Week
+              Weekly
             </v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
@@ -58,7 +57,6 @@
             </v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>-->
-
 
         <v-layout row align-center>
           <v-flex xs6>
@@ -202,7 +200,7 @@
   }
 
   .datepicker-input {
-    width: 92%;
+    width: 100%;
     text-align: center;
     border-bottom: 1px solid black;
   }
