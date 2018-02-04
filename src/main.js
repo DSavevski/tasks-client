@@ -23,6 +23,8 @@ import {
   VSelect,
   VTextField,
   VTabs,
+  VSnackbar,
+  VSwitch,
   transitions
 } from 'vuetify'
 
@@ -47,6 +49,8 @@ Vue.use(Vuetify, {
     VSelect,
     VTextField,
     VTabs,
+    VSnackbar,
+    VSwitch,
     transitions
   }
 })
@@ -56,7 +60,8 @@ Vue.use(VCalendar, {
   popoverExpanded: true,
   /*popoverVisibility: 'visible',*/
   datePickerInputClass: 'datepicker-input',
-  datePickerInputPlaceholder: 'FSADASDDA'
+  datePickerInputPlaceholder: 'FSADASDDA',
+  dateFormatter: 'YYYY-MM-DD'
 })
 
 Vue.config.productionTip = false
@@ -67,4 +72,5 @@ new Vue({
   router,
   components: { App },
   template: '<App/>'
-})
+});
+
