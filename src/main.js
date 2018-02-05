@@ -4,6 +4,7 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import VCalendar from 'v-calendar';
+import GSignInButton from 'vue-google-signin-button'
 
 import {
   Vuetify,
@@ -25,6 +26,8 @@ import {
   VTabs,
   VSnackbar,
   VSwitch,
+  VMenu,
+  VParallax,
   transitions
 } from 'vuetify'
 
@@ -51,6 +54,9 @@ Vue.use(Vuetify, {
     VTabs,
     VSnackbar,
     VSwitch,
+    GSignInButton,
+    VMenu,
+    VParallax,
     transitions
   }
 })

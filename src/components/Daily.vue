@@ -1,8 +1,8 @@
 <template>
   <v-container fluid>
     <v-slide-y-transition mode="out-in">
-
       <v-layout row wrap>
+
         <v-flex xs1>
           <v-icon class="display-3 unselectable" @click="onPrevious()">chevron_left</v-icon>
         </v-flex>
@@ -15,6 +15,7 @@
 
         <v-flex xs12>
           <table class="table">
+
             <thead>
             <tr>
               <th scope="col" style="min-width: 150px; max-width: 150px">
@@ -34,39 +35,36 @@
 
             <tbody>
             <tr>
-              <td v-for="goupedTasks in tasks"style="min-width: 150px; max-width: 150px">
-
+              <td v-for="goupedTasks in filteredTasks" style="min-width: 150px; max-width: 150px">
                 <v-flex v-for="task in goupedTasks" :key="task.id" class="task">
-                  <v-card :class="getCssClass(task)" class="grid" @click.native="onClick(task)">
+                  <v-card :class="getCssClass(task)" class="grid" @click.native="onEdit(task)">
                     <v-card-title primary-title>
                       <div>
-                        <div class="headline">{{task.name}}</div>
+                        <h3>{{task.name}}</h3>
                         <br>
                         <div>{{task.desc}}</div>
                       </div>
                     </v-card-title>
-
                     <v-card-actions>
-                      <span class="grey--text">1,000 miles of wonder</span>
+                      <span class="grey--text">{{task.category.name}}</span>
                       <v-spacer></v-spacer>
                       <v-spacer></v-spacer>
                       <v-spacer></v-spacer>
-                      <v-spacer></v-spacer>
+                      <v-spacer>
+                      </v-spacer>
                       <v-spacer></v-spacer>
                       <v-switch style="max-height: 20px; margin-left: 10px;" color="success" label=""
                                 v-model="task.completed" @click.native="onCompleted($event,task);"/>
                     </v-card-actions>
-
                   </v-card>
                 </v-flex>
-
               </td>
             </tr>
             </tbody>
           </table>
         </v-flex>
-      </v-layout>
 
+      </v-layout>
     </v-slide-y-transition>
   </v-container>
 </template>
@@ -81,26 +79,33 @@
       return {
         currentDay: new Date(),
         tasks: null,
+        filteredTasks: [],
       }
     },
+
+
     created() {
       this.fetchData();
-      eventBus.$on('data-change', () => this.fetchData());
+      eventBus.$on('data-change', (filterObj) => this.fetchData(filterObj));
+      eventBus.$on('filter-change', (filterObj) => this.filterData(filterObj));
     },
+
+
     methods: {
-      fetchData: function () {
-        let day = moment(this.currentDay).format("YYYY-MM-DD");
-        axios.get(`/api/tasks/daily/${day}`)
+      fetchData: function (filterObj) {
+        let formattedDate = moment(this.currentDay).format("YYYY-MM-DD");
+        axios.get(`/api/tasks/daily/${formattedDate}`)
           .then(response => {
             this.tasks = response.data;
+            this.filteredTasks = this.tasks;
+            if(filterObj)
+              this.filterData(filterObj);
           })
           .catch(e => {
             this.errors.push(e)
           })
       },
-      onClick: function (task) {
-        eventBus.$emit('edit', task);
-      },
+
       getCssClass: function (task) {
         if (task.completed === 1)
           return 'completed';
@@ -112,6 +117,11 @@
           return 'low';
         return "";
       },
+
+      onEdit: function (task) {
+        eventBus.$emit('editTask', task);
+      },
+
       onCompleted: function (event, task) {
         event.stopPropagation();
         let formattedDate = moment(task.date).format("YYYY-MM-DD");
@@ -124,42 +134,60 @@
           category_id: task.category.id
         })
           .then(response => {
-            eventBus.$emit('saved');
+            if (task.completed == 1)
+              eventBus.$emit('completedTask');
+            else eventBus.$emit('notCompletedTask')
+
           })
           .catch(e => {
             console.log(e);
           })
       },
+
       onPrevious: function () {
         this.currentDay.setHours(this.currentDay.getHours() - 24);
         this.fetchData();
       },
+
       onNext: function () {
         this.currentDay.setHours(this.currentDay.getHours() + 24);
         this.fetchData();
       },
-      applyColor: function (priority) {
-        if (priority === 'Low') {
-          return 'green darken-1';
+
+      filterData:function (filterObj) {
+        this.filteredTasks = [];
+        for(let day in this.tasks){
+          let tmpDay=[];
+          if(this.tasks[day].length > 0)
+            for(let task of this.tasks[day]){
+              if(filterObj['Category'].name === 'All'|| filterObj['Category'].name === task['category'].name)
+                if(filterObj['Completed'].name === 'All' || filterObj['Completed'].name === this.getCompletedStatus(task['completed']))
+                  tmpDay.push(task);
+            }
+          this.filteredTasks.push(tmpDay);
         }
-        else if (priority === 'Medium') {
-          return 'yellow darken-1';
-        } else {
-          return 'red darken-1';
-        }
+      },
+
+      getCompletedStatus: function(completedStatus){
+        if(completedStatus === 1)
+          return 'Completed';
+        else return 'Uncompleted';
       }
     },
+
+
     filters: {
       filterDate: function (date) {
-        return moment(date).format('MMM Do');
+        return moment(date).format('ddd, MMM Do');
       }
     }
+
   }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
   .completed {
     border-top: 10px solid black;
     opacity: 0.35;
@@ -361,13 +389,4 @@
     border: 0;
   }
 
-  /*P {*/
-  /*display: block; !* Fallback for non-webkit *!*/
-  /*display: -webkit-box;*/
-  /*max-width: 400px;*/
-  /*margin: 0 auto;*/
-  /*-webkit-box-orient: vertical;*/
-  /*overflow: hidden;*/
-  /*text-overflow: ellipsis;*/
-  /*}*/
 </style>

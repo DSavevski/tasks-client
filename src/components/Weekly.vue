@@ -2,6 +2,7 @@
   <v-container fluid>
     <v-slide-y-transition mode="out-in">
       <v-layout row wrap>
+
         <v-flex xs1>
           <v-icon class="display-3 unselectable" @click="onPrevious()">chevron_left</v-icon>
         </v-flex>
@@ -11,29 +12,39 @@
         <v-flex xs1>
           <v-icon class="display-3 unselectable" @click="onNext()">chevron_right</v-icon>
         </v-flex>
-        <h1 v-show="false">{{counter}}</h1>
-
 
         <v-flex xs12>
           <table class="table">
+
             <thead>
             <tr>
-                <th scope="col" v-for="day in days" style="min-width: 170px">
-                  {{day | filterDate}}
-                </th>
+              <th scope="col" v-for="day in days" style="min-width: 150px;max-width: 150px">
+                {{day | filterDate}}
+              </th>
             </tr>
             </thead>
 
             <tbody>
             <tr>
-              <td v-for="dailyTasks in tasks">
-
+              <td v-for="dailyTasks in filteredTasks" style="min-width: 150px; max-width: 150px">
                 <v-flex v-for="task in dailyTasks" :key="task.id" class="task">
-                  <v-card :class="getCssClass(task)" class="grid" style="min-width: 170px;max-width: 220px;min-height: 64px;max-height: 100px;padding: 5px;padding-top: 25px">
-                      <div class="my-text">
-                        <p class="text-xs-center"><b>{{task.name}}</b></p>
+                  <v-card :class="getCssClass(task)" class="grid" @click.native="onEdit(task)">
+                    <v-card-title primary-title>
+                      <div>
+                        <h3>{{task.name}}</h3>
                       </div>
-                    <v-switch color="success" label="" v-model="task.completed" @click.native="onCompleted($event,task);"/>
+                    </v-card-title>
+                    <v-card-actions>
+                    <span class="grey--text">{{task.category.name}}</span>
+                    <v-spacer></v-spacer>
+                    <v-spacer></v-spacer>
+                    <v-spacer></v-spacer>
+                    <v-spacer>
+                    </v-spacer>
+                    <v-spacer></v-spacer>
+                    <v-switch style="max-height: 20px; margin-left: 10px;" color="success" label=""
+                              v-model="task.completed" @click.native="onCompleted($event,task);"/>
+                    </v-card-actions>
                   </v-card>
                 </v-flex>
 
@@ -51,90 +62,155 @@
 <script>
   import moment from 'moment';
   import axios from 'axios';
+  import eventBus from '@/event-bus.js';
 
   export default {
     data() {
       return {
-        counter: 1,
         currentDay: new Date(),
         lastDay: new Date(),
         tasks: null,
+        filteredTasks: [],
         days: null
       }
     },
+
+
     created() {
+      if (this.currentDay.getDay() == 0) {
+        this.currentDay.setUTCHours(this.currentDay.getHours() - 24 * 7);
+        this.lastDay.setUTCHours(this.lastDay.getHours() - 24 * 7);
+      }
       this.currentDay.setHours(this.currentDay.getHours() - (this.currentDay.getDay() - 1) * 24);
       this.lastDay.setHours(this.lastDay.getHours() - (this.lastDay.getDay() - 1) * 24);
       this.lastDay.setHours(this.lastDay.getHours() + 6 * 24);
+
       this.fetchData();
+
+      eventBus.$on('data-change', (filterObj) => this.fetchData(filterObj));
+      eventBus.$on('filter-change', (filterObj) => this.filterData(filterObj));
     },
+
+
     methods: {
-      fetchData: function () {
-        let day = moment(this.currentDay).format("YYYY-MM-DD");
-        axios.get(`/api/tasks/weekly/${day}`)
+      fetchData: function (filterObj) {
+        let formattedDate = moment(this.currentDay).format("YYYY-MM-DD");
+        axios.get(`/api/tasks/weekly/${formattedDate}`)
           .then(response => {
-            this.tasks = response.data.data;
-            this.days = response.data['days'];
+            this.tasks = response.data.tasks;
+            this.days = response.data.days;
+            this.filteredTasks = this.tasks;
+            if(filterObj)
+              this.filterData(filterObj);
           })
           .catch(e => {
-            this.errors.push(e)
+            console.log(e);
           })
       },
+
       getCssClass: function (task) {
-        if(task.completed === 1)
+        if (task.completed === 1)
           return 'completed';
-        else if(task.priority === 'High')
+        else if (task.priority === 'High')
           return 'high';
-        else if(task.priority === 'Medium')
+        else if (task.priority === 'Medium')
           return 'medium';
-        else if(task.priority === 'Low')
+        else if (task.priority === 'Low')
           return 'low';
         return "";
       },
+
+      onEdit: function (task) {
+        eventBus.$emit('editTask', task);
+      },
+
+      onCompleted: function (event, task) {
+        event.stopPropagation();
+        let formattedDate = moment(task.date).format("YYYY-MM-DD");
+        axios.put(`/api/tasks/${task.id}`, {
+          name: task.name,
+          desc: task.desc,
+          priority: task.priority,
+          completed: task.completed,
+          date: formattedDate,
+          category_id: task.category_id
+        })
+          .then(response => {
+            if (task.completed == 1)
+              eventBus.$emit('completedTask');
+            else eventBus.$emit('notCompletedTask')
+
+          })
+          .catch(e => {
+            console.log(e);
+          })
+      },
+
       onPrevious: function () {
-        this.counter -= 1;
         this.currentDay.setHours(this.currentDay.getHours() - 7 * 24);
         this.lastDay.setHours(this.lastDay.getHours() - 24 * 7);
         this.fetchData();
       },
+
       onNext: function () {
-        this.counter += 1;
         this.currentDay.setHours(this.currentDay.getHours() + 7 * 24);
         this.lastDay.setHours(this.lastDay.getHours() + 24 * 7);
         this.fetchData();
       },
 
+      filterData:function (filterObj) {
+
+        this.filteredTasks = [];
+        for(let day of this.tasks){
+          let tmpDay=[];
+          if(day.length > 0)
+            for(let task of day){
+               if(filterObj['Category'].name === 'All' || filterObj['Category'].name === task['category'].name)
+                 if(filterObj['Completed'].name === 'All' || filterObj['Completed'].name === this.getCompletedStatus(task['completed']))
+                    tmpDay.push(task);
+           }
+          this.filteredTasks.push(tmpDay);
+        }
+      },
+
+      getCompletedStatus: function(completedStatus){
+        if(completedStatus === 1)
+          return 'Completed';
+        else return 'Uncompleted';
+      }
+
     },
+
+
     filters: {
       filterDate: function (date) {
-        return moment(date).format('MMM Do');
+        return moment(date).format('ddd, MMM Do');
       }
     }
 
   }
 
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
-  .completed{
+  .completed {
     border-top: 10px solid black;
     opacity: 0.35;
   }
-  .high{
+
+  .high {
     border-top: 10px solid red;
   }
+
   .medium {
     border-top: 10px solid yellow;
   }
-  .low{
+
+  .low {
     border-top: 10px solid green;
   }
-.my-text{
-  text-overflow: clip;
-}
+
   .task {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -152,6 +228,7 @@
   ul {
     list-style-type: none;
   }
+
   /* Pulled from https://github.com/twbs/bootstrap/blob/v4-dev/dist/css/bootstrap.css#L2079-L2241 */
 
   .table {
@@ -318,13 +395,4 @@
     border: 0;
   }
 
-/*P {*/
-  /*display: block; !* Fallback for non-webkit *!*/
-  /*display: -webkit-box;*/
-  /*max-width: 400px;*/
-  /*margin: 0 auto;*/
-  /*-webkit-box-orient: vertical;*/
-  /*overflow: hidden;*/
-  /*text-overflow: ellipsis;*/
-/*}*/
 </style>

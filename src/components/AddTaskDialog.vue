@@ -2,13 +2,14 @@
   <v-layout row justify-center>
     <v-dialog v-model="dialog" persistent max-width="900px">
       <v-card>
+
         <v-card-title style="padding-bottom: 0">
           <span class="headline">{{title}}</span>
         </v-card-title>
+
         <v-card-text style="padding-top: 0">
           <v-container grid-list-md>
             <v-layout wrap>
-
               <v-flex xs6>
                 <v-text-field name="name" label="Name" v-model='task.name' class="--focused" required></v-text-field>
               </v-flex>
@@ -28,19 +29,20 @@
               </v-flex>
 
               <v-flex xs12 sm6>
-                <v-select label="Categories" required v-model="category" :items="categories" item-text="name"
+                <v-select label="Categories" required v-model="categoryId" :items="categories" item-text="name"
                           item-value="id"/>
               </v-flex>
             </v-layout>
-
           </v-container>
           <small>*indicates required field</small>
         </v-card-text>
         <v-card-actions>
+          <v-btn color="red darken-1" v-if="task['id']" flat @click.native="onDelete()">Delete</v-btn>
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" flat @click.native="onClose()">Close</v-btn>
           <v-btn color="blue darken-1" flat @click.native="onSave()">Save</v-btn>
         </v-card-actions>
+
       </v-card>
     </v-dialog>
   </v-layout>
@@ -56,20 +58,23 @@
       return {
         dialog: true,
         categories: [],
-        category: null
+        categoryId: null
       }
     },
+
     props: ['title', 'task'],
+
     created() {
       axios.get(`/api/categories`)
         .then(response => {
-          this.category = this.task['category_id'];
+          this.categoryId = this.task['category_id'];
           this.categories = response.data;
         })
         .catch(e => {
           this.errors.push(e)
         })
     },
+
     methods: {
       onSave: function () {
         let formattedDate = moment(this.task.date).format("YYYY-MM-DD");
@@ -80,10 +85,10 @@
             priority: this.task.priority,
             completed: this.task.completed,
             date: formattedDate,
-            category_id: this.category
+            category_id: this.categoryId
           })
             .then(response => {
-              eventBus.$emit('saved');
+              eventBus.$emit('savedDialog');
             })
             .catch(e => {
               console.log(e);
@@ -94,21 +99,35 @@
             desc: this.task.desc,
             priority: this.task.priority,
             date: formattedDate,
-            category_id: this.category
+            category_id: this.categoryId
           })
             .then(response => {
-              eventBus.$emit('saved');
+              eventBus.$emit('savedDialog');
             })
             .catch(e => {
               console.log(e);
             })
         }
       },
+
       onClose: function () {
-        eventBus.$emit('closed');
+        eventBus.$emit('closedDialog');
+      },
+
+      onDelete: function () {
+        axios.delete(`/api/tasks/${this.task.id}`)
+          .then(response => {
+            eventBus.$emit('deleteTask');
+          })
+          .catch(e => {
+            console.log(e);
+          })
       }
+
     }
+
   }
+
 </script>
 
 <style scoped>
