@@ -36,12 +36,7 @@
                     </v-card-title>
                     <v-card-actions>
                     <span class="grey--text">{{task.category.name}}</span>
-                    <v-spacer></v-spacer>
-                    <v-spacer></v-spacer>
-                    <v-spacer></v-spacer>
-                    <v-spacer>
-                    </v-spacer>
-                    <v-spacer></v-spacer>
+                      <v-divider></v-divider>
                     <v-switch style="max-height: 20px; margin-left: 10px;" color="success" label=""
                               v-model="task.completed" @click.native="onCompleted($event,task);"/>
                     </v-card-actions>
