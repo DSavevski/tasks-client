@@ -125,7 +125,7 @@
       onCompleted: function (event, task) {
         event.stopPropagation();
         let formattedDate = moment(task.date).format("YYYY-MM-DD");
-        axios.put(`/api/tasks/${task.id}`, {
+        return axios.put(`/api/tasks/${task.id}`, {
           name: task.name,
           desc: task.desc,
           priority: task.priority,
@@ -147,11 +147,19 @@
       onPrevious: function () {
         this.currentDay.setHours(this.currentDay.getHours() - 24);
         this.fetchData();
+        this.fetchData()
+          .then(res =>{
+            eventBus.$emit('pageChange');
+          })
       },
 
       onNext: function () {
         this.currentDay.setHours(this.currentDay.getHours() + 24);
         this.fetchData();
+        this.fetchData()
+          .then(res =>{
+            eventBus.$emit('pageChange');
+          })
       },
 
       filterData:function (filterObj) {

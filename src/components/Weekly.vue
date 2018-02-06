@@ -90,7 +90,7 @@
     methods: {
       fetchData: function (filterObj) {
         let formattedDate = moment(this.currentDay).format("YYYY-MM-DD");
-        axios.get(`/api/tasks/weekly/${formattedDate}`)
+        return axios.get(`/api/tasks/weekly/${formattedDate}`)
           .then(response => {
             this.tasks = response.data.tasks;
             this.days = response.data.days;
@@ -101,6 +101,7 @@
           .catch(e => {
             console.log(e);
           })
+
       },
 
       getCssClass: function (task) {
@@ -144,13 +145,20 @@
       onPrevious: function () {
         this.currentDay.setHours(this.currentDay.getHours() - 7 * 24);
         this.lastDay.setHours(this.lastDay.getHours() - 24 * 7);
-        this.fetchData();
+        this.fetchData()
+          .then(res =>{
+            eventBus.$emit('pageChange');
+          })
+
       },
 
       onNext: function () {
         this.currentDay.setHours(this.currentDay.getHours() + 7 * 24);
         this.lastDay.setHours(this.lastDay.getHours() + 24 * 7);
-        this.fetchData();
+        this.fetchData()
+          .then(res =>{
+            eventBus.$emit('pageChange');
+          })
       },
 
       filterData:function (filterObj) {

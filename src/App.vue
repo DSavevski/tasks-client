@@ -142,12 +142,15 @@
 
 
     created() {
+
       eventBus.$on('savedDialog', () => this.onSaveDialog());
       eventBus.$on('closedDialog', () => this.onCloseDialog());
       eventBus.$on('completedTask', () => this.onCompletedTask());
       eventBus.$on('notCompletedTask', () => this.onNotCompletedTask());
       eventBus.$on('editTask', (task) => this.onEditTask(task));
       eventBus.$on('deleteTask', (task) => this.onDeleteTask(task));
+      eventBus.$on('pageChange', ()=>{eventBus.$emit('filter-change',this.filterObj);});
+
       axios.get(`/api/categories`)
         .then(response => {
           this.categories = response.data;
