@@ -1,4 +1,4 @@
-# tasks-client
+# Tasks client
 
 > A client side Vue.js project for the tasks app
 
